@@ -12,9 +12,18 @@ class Database:
             print("Category", name, "already exists")
             return
         self.categories[name] = Category(name)
+        return self.categories[name]
     
     def getCategories(self):
         return tuple(self.categories.values())
+        
+    def getTree(self):
+        d = {}
+        for c in self.categories.values():
+            d[c.name] = {}
+            for s in c.symbols.values():
+                d[c.name][s.name] = {'name': s.name, 'text': s.text, 'image': s.image}
+        return d
         
     def save(self):
         with open("database", "wb") as f:
@@ -38,6 +47,7 @@ class Category:
             print("Symbol already exists")
             return
         self.symbols[name] = Symbol(name, text, image)
+        return self.symbols[name]
 
     def getSymbols(self):
         return tuple(self.symbols.values())
