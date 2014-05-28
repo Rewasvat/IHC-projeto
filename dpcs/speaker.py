@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
-import sys, os
+
+import os
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode
 
@@ -9,10 +10,11 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
 import steel
 
-class Speaker:
 
+class Speaker:
     def __init__(self):
         self.player = QMediaPlayer()
+
         try:
             self.backup = steel.available_engines()[0]()
             self.backup.set("rate", 150)
