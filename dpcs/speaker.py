@@ -8,7 +8,7 @@ from urllib.parse import urlencode
 from PyQt5.QtCore import QUrl, QFileInfo
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
-import steel
+from . import steel
 
 
 class Speaker:

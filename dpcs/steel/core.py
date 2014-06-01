@@ -18,10 +18,10 @@
 import platform
 import os
 
-from steel.FreeTTS import *
-from steel.SAPI5 import *
-from steel.eSpeak import *
-from steel.NSSS import *
+from .FreeTTS import FreeTTS
+from .SAPI5 import SAPI5
+from .eSpeak import eSpeak
+from .NSSS import NSSS
 
 if platform.system() == "Windows":
     import _winreg

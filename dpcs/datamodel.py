@@ -56,11 +56,11 @@ class Category:
 
         return self._symbols.pop(symbol_name, None)
 
-    def allSymbols(self):
-        yield from self.symbols()
-
-        for category in self.categories():
-            yield from category.symbols()
+#    def allSymbols(self):
+#        yield from self.symbols()
+#
+#        for category in self.categories():
+#            yield from category.symbols()
 
 
 class Database(Category):

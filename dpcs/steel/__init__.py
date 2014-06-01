@@ -46,8 +46,8 @@
 # functions:     None
 #
 
-from steel.core import available_engines, play_wav
-from steel.FreeTTS import *
-from steel.SAPI5 import *
-from steel.eSpeak import *
-from steel.NSSS import *
+from .core import available_engines, play_wav
+from .FreeTTS import *
+from .SAPI5 import *
+from .eSpeak import *
+from .NSSS import *
