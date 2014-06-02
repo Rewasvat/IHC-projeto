@@ -8,9 +8,9 @@ Para Executar
 -----------
 
 Só rodar no terminal
-./main.py
+* ./main.py
 ou
-python3 main.py
+* python3 main.py
 
 
 Dependências
