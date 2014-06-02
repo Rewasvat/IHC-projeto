@@ -5,14 +5,15 @@ import os
 from urllib.request import Request, urlopen
 from urllib.parse import urlencode
 
-from PyQt5.QtCore import QUrl, QFileInfo
+from PyQt5.QtCore import QUrl, QFileInfo, QObject, pyqtSlot
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 
 from . import steel
 
 
-class Speaker:
+class Speaker(QObject):
     def __init__(self):
+        super().__init__()
         self.player = QMediaPlayer()
 
         try:
@@ -22,6 +23,7 @@ class Speaker:
             self.backup = None
             print("Could not start a backup offline speaker.")
 
+    @pyqtSlot(str, str)
     def speak(self, name, text, lang="pt-br"):
         fpath = "./speeches/" + name + ".mp3"
         if not os.path.isdir("./speeches"):
@@ -47,3 +49,4 @@ class Speaker:
         self.player.stop()
         self.player.setMedia(QMediaContent(QUrl.fromLocalFile(QFileInfo(fpath).absoluteFilePath())))
         self.player.play()
+        
