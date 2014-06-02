@@ -12,29 +12,29 @@ Rectangle {
     }
 
     Text {
+        id: falacoisa
         anchors.centerIn: parent
-        text: "Hello World"
+        text: "Fala mensagem teste"
         
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                //Qt.quit();
                 sp.speak("deletaMe", "Testando 1 2 3")
             }
         }
     }
     
     
-    /*Button {
-        x: 10
-        y: 10
-        text: "fala"
+    Text {
+        anchors.top: falacoisa.bottom
+        anchors.horizontalCenter: parent.horizontalCenter
+        text: "Fecha janela"
         
         MouseArea {
             anchors.fill: parent
             onClicked: {
-                
+                Qt.quit();
             }
         }
-    }*/
+    }
 }

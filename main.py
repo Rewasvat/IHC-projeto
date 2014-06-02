@@ -18,9 +18,10 @@ app = QGuiApplication(sys.argv)
 
 qmlRegisterType(Speaker, 'Speaker', 1, 0, 'Speaker')
 
-view = QQuickView(QUrl("teste.qml"))
+view = QQuickView()
 view.engine().quit.connect(app.quit)
 
+view.setSource(QUrl('teste.qml'))
 view.show()
 
 sys.exit(app.exec_())

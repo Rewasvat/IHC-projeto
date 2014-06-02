@@ -12,9 +12,9 @@ from . import steel
 
 
 class Speaker(QObject):
-    def __init__(self):
-        super().__init__()
-        self.player = QMediaPlayer()
+    def __init__(self, parent=None):
+        super(Speaker,self).__init__(parent)
+        self.player = QMediaPlayer(self)
 
         try:
             self.backup = steel.available_engines()[0]()
