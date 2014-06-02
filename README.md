@@ -7,9 +7,8 @@ Repositório para o projeto de IHC - protótipo de interface para comunicação 
 Para Executar
 -----------
 
-Só rodar no terminal
+Só rodar no terminal um dos seguintes comandos
 * ./main.py
-ou
 * python3 main.py
 
 
