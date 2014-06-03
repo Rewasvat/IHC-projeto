@@ -5,24 +5,18 @@ import os.path
 import pickle
 
 
-class Symbol(dict):
+class Symbol:
     _fields = ('name', 'text', 'image')
 
     def __init__(self, name, text='', image=''):
         super().__init__()
 
-        self['name'] = name
-        self['text'] = text
-        self['image'] = image
-
-    def __getattr__(self, item):
-        try:
-            return self[item]
-        except KeyError:
-            raise AttributeError
+        self.name = name
+        self.text = text
+        self.image = image
 
 
-class Category(dict):
+class Category:
     _fields = ('name', 'text', 'image', 'color')
 
     def __init__(self, name, text='', image='', color=None):
@@ -34,16 +28,10 @@ class Category(dict):
         if not name:
             raise ValueError
 
-        self['name'] = name
-        self['text'] = text
-        self['image'] = image
-        self['color'] = color
-
-    def __getattr__(self, item):
-        try:
-            return self[item]
-        except KeyError:
-            raise AttributeError
+        self.name = name
+        self.text = text
+        self.image = image
+        self.color = color
 
     def categories(self):
         for category in self._categories:
