@@ -42,3 +42,4 @@ Conteúdo do Repositório
 * dpcs/steel: uma biblioteca open source que usamos, com poucas modificações, para facilitar o uso de engines TTS do sistema.
 * dpcs-database.dat: arquivo gerado pelo programa - é o database de simbolos, categorias e outros atributos salvos.
 * speeches: pasta gerada pelo programa, contendo os arquivos .mp3 gerados pelo Google Translate para vocalização dos símbolos.
+* generate.py: script utilitário para gerar o database inicial do projeto de forma mais rápida
