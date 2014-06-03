@@ -3,14 +3,36 @@
 
 import os.path
 import pickle
-from collections import OrderedDict
 
 
 class Symbol(dict):
+    _fields = ('name', 'text', 'image')
+
+    def __init__(self, name, text='', image=''):
+        super().__init__()
+
+        self['name'] = name
+        self['text'] = text
+        self['image'] = image
+
+    def __getattr__(self, item):
+        try:
+            return self[item]
+        except KeyError:
+            raise AttributeError
+
+
+class Category(dict):
     _fields = ('name', 'text', 'image', 'color')
 
     def __init__(self, name, text='', image='', color=None):
         super().__init__()
+
+        self._categories = list()
+        self._symbols = list()
+
+        if not name:
+            raise ValueError
 
         self['name'] = name
         self['text'] = text
@@ -23,17 +45,6 @@ class Symbol(dict):
         except KeyError:
             raise AttributeError
 
-
-class Category:
-    def __init__(self, name):
-        self._categories = list()
-        self._symbols = list()
-
-        if not name:
-            raise ValueError
-
-        self.name = name
-
     def categories(self):
         for category in self._categories:
             if category:
@@ -44,7 +55,7 @@ class Category:
 
     def categoryNameIndex(self, categoryName):
         return next(((i, c) for i, c in enumerate(self._categories)
-              if c.name == categoryName), (None,))[0]
+                     if c.name == categoryName), (None,))[0]
 
     def categoryByIndex(self, index):
         return self._categories[index]
@@ -109,7 +120,7 @@ class Database(Category):
     defaultFilename = "./dpcs-database.dat"
 
     def __init__(self):
-        super().__init__("Database")
+        super().__init__("Database", "null", None)
 
     def addSymbol(self, symbol):
         raise NotImplementedError
@@ -135,9 +146,10 @@ class Database(Category):
 
     @classmethod
     def testData(cls, save=True):
+        from PyQt5.QtGui import QColor
         db = Database()
-        c1 = Category('test')
-        c2 = Category('test2')
+        c1 = Category('test', 'testImage', QColor('red'))
+        c2 = Category('meuDeus', '2222Image', QColor('blue'))
 
         s1 = Symbol('1', '1', '1')
         s2 = Symbol('2', '2', '2')

@@ -1,19 +1,62 @@
 import QtQuick 2.2
-import Speaker 1.0
+import DPCS 1.0
 
 //ver isso: http://stackoverflow.com/questions/23902968/pyqt5-executable-application-with-qml
 
 Rectangle {
-    width: 360
-    height: 360
+    width: 500
+    height: 400
 
     Speaker {
         id: sp
     }
+    
+    Database {
+        id: myData
+    }
 
+    Component {
+        id: symbolDelegate
+        Item {
+            width: 100
+            anchors.topMargin: 20
+            y: 50
+            Row {
+                height: 45
+                Text {
+                    text: "\n"+name + "|" + stext + "|" + image
+                }
+            }
+        }
+    }
+    Component {
+        id: categoryDelegate
+        Column {
+            width: 100
+            Row {
+                height: 200
+                Text {
+                    text: "Category: " + name
+                }
+                ListView {
+                    model: symbols
+                    delegate: symbolDelegate
+                }
+            }
+        }
+    }
+    
+    ListView {
+        anchors.fill: parent
+
+        model: myData.categories
+        delegate: categoryDelegate
+    }
+    
     Text {
         id: falacoisa
-        anchors.centerIn: parent
+        anchors.top: parent.top
+        anchors.right: parent.right
         text: "Fala mensagem teste"
         
         MouseArea {
@@ -27,7 +70,7 @@ Rectangle {
     
     Text {
         anchors.top: falacoisa.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.right: parent.right
         text: "Fecha janela"
         
         MouseArea {
