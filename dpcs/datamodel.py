@@ -52,23 +52,15 @@ class Category:
         self._categories.append(category)
 
     def removeCategory(self, category):
-        old = None
-        if isinstance(category, Category):
-            for i, c in enumerate(self._categories):
-                if c == category:
-                    old = c
-                    self._categories[i] = None
-                    break
+        if isinstance(category, str):
+            category = self.category(category)
+            if category:
+                self.removeCategory(category)
         else:
-            categoryName = category
+            return self._categories.remove(category)
 
-            for i, c in enumerate(self._categories):
-                if c.name == categoryName:
-                    old = c
-                    self._categories[i] = None
-                    break
-
-        return old
+    def categoryCount(self):
+        return len(self._categories)
 
     def symbols(self):
         for symbol in self._symbols:
@@ -93,15 +85,18 @@ class Category:
         self._symbols.append(symbol)
 
     def removeSymbol(self, symbol):
-        if isinstance(symbol, Symbol):
-            symbol_name = symbol.name
+        if isinstance(symbol, str):
+            symbol = self.symbol(symbol)
+            if symbol:
+                self.removeSymbol(symbol)
         else:
-            symbol_name = symbol
+            return self._symbols.remove(symbol)
 
-        return self._symbols.pop(symbol_name, None)
+    def symbolCount(self):
+        return len(self._symbols)
 
     def __len__(self):
-        return len(list(self.symbols()))
+        return self.symbolCount()
 
 
 class Database(Category):
