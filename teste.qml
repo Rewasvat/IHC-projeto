@@ -25,6 +25,13 @@ Rectangle {
                 height: 45
                 Text {
                     text: "\n"+name + "|" + stext + "|" + image
+                    
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            sp.speak(name, stext)
+                        }
+                    }
                 }
             }
         }
