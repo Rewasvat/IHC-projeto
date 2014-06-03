@@ -106,8 +106,9 @@ class Category:
 class Database(Category):
     defaultFilename = "./dpcs-database.dat"
 
-    def __init__(self):
+    def __init__(self, tempoDeRotacao=4):
         super().__init__("Database", "null", None)
+        self.tempoDeRotacao = tempoDeRotacao
 
     def addSymbol(self, symbol):
         raise NotImplementedError
