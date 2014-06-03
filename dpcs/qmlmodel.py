@@ -20,6 +20,15 @@ class Database(QObject):
     def load(self):
         self.data = datamodel.Database.load()
         
+    tempoDeRotacaoChanged = pyqtSignal(int)
+    
+    @pyqtProperty(int, notify=tempoDeRotacaoChanged)
+    def tempoDeRotacao(self):
+        return self.data.tempoDeRotacao
+    @tempoDeRotacao.setter
+    def tempoDeRotacao(self, tempoDeRotacao):
+        self.data.tempoDeRotacao = tempoDeRotacao
+        
     @pyqtProperty(QQmlListProperty, constant=True)
     def categories(self):
         categs = []

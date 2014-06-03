@@ -4,8 +4,8 @@ import DPCS 1.0
 //ver isso: http://stackoverflow.com/questions/23902968/pyqt5-executable-application-with-qml
 
 Rectangle {
-    width: 500
-    height: 400
+    width: 800
+    height: 600
 
     Speaker {
         id: sp
@@ -39,25 +39,56 @@ Rectangle {
     Component {
         id: categoryDelegate
         Column {
-            width: 100
-            Row {
-                height: 200
-                Text {
-                    text: "Category: " + name
-                }
-                ListView {
-                    model: symbols
-                    delegate: symbolDelegate
-                }
+            id: wrapper
+            Rectangle {
+                color: "red"
+                id: rect
+                anchors.verticalCenter: wrapper.verticalCenter
+                width: 760
+                height: 70
             }
+            Image {
+                id: catImg
+                anchors.left: rect.left
+                anchors.leftMargin: 10
+                anchors.verticalCenter: wrapper.verticalCenter
+                
+                width: 64; height: 64
+                source: image
+            }
+            Text {
+                text: name
+                font.pointSize: 16
+                color: wrapper.PathView.isCurrentItem ? "red" : "black"
+                anchors.left: catImg.right
+                anchors.leftMargin: 10
+                anchors.verticalCenter: wrapper.verticalCenter
+            }
+            
         }
     }
     
-    ListView {
+    PathView {
+        id: categoryView
         anchors.fill: parent
 
         model: myData.categories
         delegate: categoryDelegate
+        
+        preferredHighlightBegin: 0.5
+        preferredHighlightEnd: 0.5
+        path: Path {
+            startX: 20
+            startY: 20
+            PathLine { x: 20; y: 580 }
+        }
+        
+        Timer { 
+            interval: myData.tempoDeRotacao * 1000
+            repeat: true
+            running: true
+            onTriggered: categoryView.incrementCurrentIndex()
+        }
     }
     
     
