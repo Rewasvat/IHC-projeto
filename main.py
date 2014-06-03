@@ -10,8 +10,8 @@ from PyQt5.QtQuick import QQuickView
 from dpcs.manager import SymbolManager
 
 from dpcs.speaker import Speaker
-#spTeste = Speaker()
-#spTeste.speak("deleteMe", "Testando 1 2 3")
+spTeste = Speaker()
+spTeste.speak("deleteMe", "Testando 1 2 3")
 
 
 app = QGuiApplication(sys.argv)
