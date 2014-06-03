@@ -60,23 +60,9 @@ Rectangle {
         delegate: categoryDelegate
     }
     
+    
     Text {
-        id: falacoisa
         anchors.top: parent.top
-        anchors.right: parent.right
-        text: "Fala mensagem teste"
-        
-        MouseArea {
-            anchors.fill: parent
-            onClicked: {
-                sp.speak("deletaMe", "Testando 1 2 3")
-            }
-        }
-    }
-    
-    
-    Text {
-        anchors.top: falacoisa.bottom
         anchors.right: parent.right
         text: "Fecha janela"
         

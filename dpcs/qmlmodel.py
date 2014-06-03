@@ -65,6 +65,10 @@ class Category(QObject):
         syms = []
         for s in self.categ.symbols():
             syms.append(Symbol(self, s))
+        v1 = Symbol(self, datamodel.Symbol("voltar", "Voltar", "./simbolos/seta.jpg"))
+        v2 = Symbol(self, datamodel.Symbol("voltar", "Voltar", "./simbolos/seta.jpg"))
+        syms.insert(0, v1)
+        syms.insert(1+int(len(syms)/2), v2)
         return QQmlListProperty(Symbol, self, syms)
    
 ###

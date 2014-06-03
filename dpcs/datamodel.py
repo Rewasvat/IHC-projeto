@@ -17,7 +17,7 @@ class Symbol:
 
 
 class Category:
-    _fields = ('name', 'text', 'image', 'color')
+    _fields = ('name', 'image', 'color')
 
     def __init__(self, name, image='', color=None):
         super().__init__()
