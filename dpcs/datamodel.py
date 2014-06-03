@@ -19,7 +19,7 @@ class Symbol:
 class Category:
     _fields = ('name', 'text', 'image', 'color')
 
-    def __init__(self, name, text='', image='', color=None):
+    def __init__(self, name, image='', color=None):
         super().__init__()
 
         self._categories = list()
@@ -29,7 +29,6 @@ class Category:
             raise ValueError
 
         self.name = name
-        self.text = text
         self.image = image
         self.color = color
 
