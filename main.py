@@ -7,16 +7,15 @@ from PyQt5.QtQml import qmlRegisterType
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQuick import QQuickView
 
-from dpcs.manager import SymbolManager
-
 from dpcs.speaker import Speaker
-spTeste = Speaker()
-spTeste.speak("deleteMe", "Testando 1 2 3")
-
+from dpcs.qmlmodel import Database, Category, Symbol
 
 app = QGuiApplication(sys.argv)
 
-qmlRegisterType(Speaker, 'Speaker', 1, 0, 'Speaker')
+qmlRegisterType(Speaker, 'DPCS', 1, 0, 'Speaker')
+qmlRegisterType(Database, 'DPCS', 1, 0, 'Database')
+qmlRegisterType(Category, 'DPCS', 1, 0, 'Category')
+qmlRegisterType(Symbol, 'DPCS', 1, 0, 'Symbol')
 
 view = QQuickView()
 view.engine().quit.connect(app.quit)

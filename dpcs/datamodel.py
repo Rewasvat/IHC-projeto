@@ -11,7 +11,7 @@ class Symbol(namedtuple('Symbol', 'name text image')):
 
 
 class Category:
-    def __init__(self, name):
+    def __init__(self, name, image, color):
         self._categories = OrderedDict()
         self._symbols = OrderedDict()
 
@@ -19,6 +19,8 @@ class Category:
             raise ValueError
 
         self.name = name
+        self.image = image
+        self.color = color
 
     def categories(self):
         for category in self._categories.values():
@@ -67,7 +69,7 @@ class Database(Category):
     defaultFilename = "./dpcs-database.dat"
 
     def __init__(self):
-        super().__init__("Database")
+        super().__init__("Database", "null", None)
 
     def addSymbol(self, symbol):
         raise NotImplementedError
@@ -93,9 +95,10 @@ class Database(Category):
 
     @classmethod
     def testData(cls, save=True):
+        from PyQt5.QtGui import QColor
         db = Database()
-        c1 = Category('test')
-        c2 = Category('test2')
+        c1 = Category('test', 'testImage', QColor('red'))
+        c2 = Category('meuDeus', '2222Image', QColor('blue'))
 
         s1 = Symbol('1', '1', '1')
         s2 = Symbol('2', '2', '2')
