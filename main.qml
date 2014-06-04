@@ -43,6 +43,7 @@ Rectangle {
 
             if (symbolInModel === "voltar") {
                 isInCategory = false;
+                currentSymbolIndex = 0;
                 P.unselect(currentCategoryName());
             }
             else {
