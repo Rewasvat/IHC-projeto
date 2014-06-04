@@ -6,7 +6,7 @@ import QtMultimedia 5.0
 
 Rectangle {
     width: 800
-    height: 600
+    height: 700
 
     Speaker {
         id: sp
@@ -58,13 +58,21 @@ Rectangle {
                 source: image
             }
             Text {
-                text: name
+                text: name + " (" + count + ")"
                 font.pointSize: 16
                 anchors.left: catImg.right
                 anchors.leftMargin: 10
                 anchors.verticalCenter: cWrapper.verticalCenter
             }
         }
+    }
+    
+    Image {
+        width: 340
+        height: 110
+        x: (parent.width - width)/2;
+        y: 10
+        source: "simbolos/dpcs.jpg"
     }
     
     PathView {
@@ -78,8 +86,8 @@ Rectangle {
         preferredHighlightEnd: 0.5
         path: Path {
             startX: 20
-            startY: 20
-            PathLine { x: 20; y: 580 }
+            startY: 120
+            PathLine { x: 20; y: 680 }
         }
         
         Keys.onSpacePressed: {
@@ -94,13 +102,13 @@ Rectangle {
         id: symbolView
         visible: false
         delegate: symbolDelegate
-        
+
         preferredHighlightBegin: 0.5
         preferredHighlightEnd: 0.5
         path: Path {
-            startX: 150
-            startY: 300
-            PathLine { x: 780; y: 300 }
+            startX: 200
+            startY: 400
+            PathLine { x: 780; y: 400 }
         }
         
         Keys.onSpacePressed: {

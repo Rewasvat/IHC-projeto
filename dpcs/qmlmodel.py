@@ -98,6 +98,10 @@ class Category(QObject):
     @selected.setter
     def selected(self, selected):
         self._selected = selected
+        
+    @pyqtProperty(int, constant=True)
+    def count(self):
+        return self.categ.symbolCount()
    
 ###
 class Symbol(QObject):
