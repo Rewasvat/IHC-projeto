@@ -20,7 +20,7 @@ qmlRegisterType(Symbol, 'DPCS', 1, 0, 'Symbol')
 view = QQuickView()
 view.engine().quit.connect(app.quit)
 
-view.setSource(QUrl('main.qml'))
+view.setSource(QUrl('teste.qml'))
 view.show()
 
 sys.exit(app.exec_())
