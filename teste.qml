@@ -98,7 +98,7 @@ Rectangle {
         preferredHighlightBegin: 0.5
         preferredHighlightEnd: 0.5
         path: Path {
-            startX: 20
+            startX: 150
             startY: 300
             PathLine { x: 780; y: 300 }
         }
