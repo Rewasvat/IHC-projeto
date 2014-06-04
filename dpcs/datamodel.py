@@ -17,9 +17,9 @@ class Symbol:
 
 
 class Category:
-    _fields = ('name', 'image', 'color', 'selected')
+    _fields = ('name', 'image', 'color')
 
-    def __init__(self, name, image='', color=None, selected = False):
+    def __init__(self, name, image='', color=None):
         super().__init__()
 
         self._categories = list()
@@ -31,7 +31,6 @@ class Category:
         self.name = name
         self.image = image
         self.color = color
-        self.selected = selected
 
     def categories(self):
         for category in self._categories:
@@ -42,8 +41,8 @@ class Category:
         return next((c for c in self._categories if c.name == categoryName), None)
 
     def categoryNameIndex(self, categoryName):
-        return next(((i, c) for i, c in enumerate(self._categories)
-                     if c.name == categoryName), (None,))[0]
+        return next((i for i, c in enumerate(self._categories)
+                     if c.name == categoryName), None)
 
     def categoryByIndex(self, index):
         return self._categories[index]
@@ -68,11 +67,12 @@ class Category:
                 yield symbol
 
     def symbolNameIndex(self, symbolName):
-        return next(((i, s) for i, s in enumerate(self._symbols)
-                     if s.name == symbolName), (None,))[0]
+        return next((i for i, s in enumerate(self._symbols)
+                     if s.name == symbolName), None)
 
     def symbol(self, symbolName):
-        return next((s for s in self._symbols if s.name == symbolName), None)
+        return next((s for s in self._symbols
+                     if s.name == symbolName), None)
 
     def symbolByIndex(self, index):
         return self._symbols[index]
@@ -117,7 +117,11 @@ class Database(Category):
         filename = filename or self.defaultFilename
 
         with open(filename, 'wb') as fp:
-            return pickle.dump(self, fp)
+            try:
+                pickle.dump(self, fp)
+                return True
+            except:
+                return False
 
     @classmethod
     def load(cls, filename=None):
@@ -132,6 +136,7 @@ class Database(Category):
     @classmethod
     def testData(cls, save=True):
         from PyQt5.QtGui import QColor
+
         db = Database()
         c1 = Category('test', 'testImage', QColor('red'))
         c2 = Category('meuDeus', '2222Image', QColor('blue'))

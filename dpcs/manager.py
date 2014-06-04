@@ -1,26 +1,37 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import QTableView
 
 from .datamodel import Symbol, Category, Database
 
 
-class SymbolTableModel(QAbstractTableModel):
+class BaseTableModel(QAbstractTableModel):
     fields = Symbol._fields
+
+    def indexByName(self, name):
+        raise NotImplementedError
+
+    def itemByIndex(self, index):
+        raise NotImplementedError
+
+    def existing(self, name):
+        raise NotImplementedError
+
+    def itemCount(self):
+        raise NotImplementedError
+
+    def _removeItem(self, item):
+        raise NotImplementedError
+
+    def _addItem(self, item):
+        raise NotImplementedError
 
     def __init__(self, category, parent=None):
         super().__init__(parent)
 
         self.category = category
 
-    def indexByName(self, name):
-        return self.category.symbolNameIndex(name)
-
-    def nameByIndex(self, index):
-        return self.category.symbolByIndex(index).name
-
     def rowCount(self, parent):
-        return len(self.category)
+        return self.itemCount()
 
     def columnCount(self, parent):
         return len(self.fields)
@@ -28,12 +39,12 @@ class SymbolTableModel(QAbstractTableModel):
     def data(self, index, role):
         if not index.isValid():
             return None
-        elif role != Qt.DisplayRole:
+        elif role not in (Qt.DisplayRole, Qt.EditRole):
             return None
 
-        name = self.nameByIndex(index.row())
+        item = self.itemByIndex(index.row())
         field = self.fields[index.column()]
-        return self.category.symbol(name)[field]
+        return getattr(item, field)
 
     def flags(self, index):
         return super().flags(index) | Qt.ItemIsEditable
@@ -44,41 +55,98 @@ class SymbolTableModel(QAbstractTableModel):
         elif role != Qt.EditRole:
             return False
 
-        name = self.nameByIndex(index.row())
-        symbol = self.category.symbol(name)
-
+        item = self.itemByIndex(index.row())
         field = self.fields[index.column()]
-        if field == 'name' and (value != symbol.name):
-            if self.category.symbol(value):
+
+        if field == 'name' and (value != item.name):
+            if self.existing(value):
                 return False
 
-        symbol[field] = value
+        setattr(item, field, value)
         return True
 
-    def removeSymbol(self, name):
-        index = self.indexByName(name)
+    def removeItem(self, item):
+        index = self.indexByName(item.name)
 
         self.beginRemoveRows(QModelIndex(), index, index)
-        self.category.removeSymbol(name)
-        self._populateIndexes()
+        self._removeItem(item)
         self.endRemoveRows()
 
-    def addSymbol(self, name):
-        if self.category.symbol(name):
+    def addItem(self, item):
+        if self.existing(item.name):
             raise ValueError
 
         index = self.rowCount(None)
-        self.beginInsertRows(None, index, index + 1)
-        self.category.addSymbol(Symbol(name=name))
-        self._populateIndexes()
+        self.beginInsertRows(QModelIndex(), index, index)
+        self._addItem(item)
         self.endInsertRows()
 
     def headerData(self, section, orientation, role):
         if role == Qt.DisplayRole:
-            try:
-                return self.fields[section].capitalize()
-            except IndexError:
-                return None
+            if orientation == Qt.Horizontal:
+                try:
+                    return self.fields[section].capitalize()
+                except IndexError:
+                    return None
+            elif orientation == Qt.Vertical:
+                return str(section)
+
+
+class SymbolTableModel(BaseTableModel):
+    fields = Symbol._fields
+
+    def indexByName(self, name):
+        return self.category.symbolNameIndex(name)
+
+    def itemByIndex(self, index):
+        return self.category.symbolByIndex(index)
+
+    def existing(self, name):
+        return self.category.symbol(name)
+
+    def itemCount(self):
+        return self.category.symbolCount()
+
+    def _addItem(self, item):
+        self.category.addSymbol(item)
+
+    def _addItemByName(self, name):
+        self._addItem(Symbol(name=name))
+
+    def _removeItem(self, item):
+        return self.category.removeSymbol(item)
+
+    def _removeItemByName(self, name):
+        return self.category.removeSymbol(name)
+
+
+class CategoryTableModel(BaseTableModel):
+    fields = Category._fields
+
+    def indexByName(self, name):
+        return self.category.categoryNameIndex(name)
+
+    def itemByIndex(self, index):
+        return self.category.categoryByIndex(index)
+
+    def existing(self, name):
+        return self.category.category(name)
+
+    def itemCount(self):
+        return self.category.categoryCount()
+
+    def _addItem(self, item):
+        self.category.addCategory(item)
+
+    def _addItemByName(self, name):
+        self._addItem(Category(name=name))
+
+    def _removeItem(self, item):
+        return self.category.removeCategory(item)
+
+    def _removeItemByName(self, name):
+        return self.category.removeCategory(name)
+
 
 class SymbolManager(QWidget):
     smallButtonSize = 30
@@ -102,139 +170,186 @@ class SymbolManager(QWidget):
 
         return result
 
+    def _createTimeSlider(self, min, max):
+        box = QVBoxLayout()
+
+        slider = QSlider()
+        slider.setOrientation(Qt.Horizontal)
+        slider.setMinimum(min)
+        slider.setMaximum(max)
+        slider.setSingleStep(1)
+        slider.valueChanged.connect(self.setRotationTime)
+
+        hbox = QHBoxLayout()
+        curLabel = QLabel()
+
+        hbox.addWidget(QLabel(str(min)))
+        hbox.addStretch()
+        hbox.addWidget(curLabel)
+        hbox.addStretch()
+        hbox.addWidget(QLabel(str(max)))
+
+        box.addWidget(QLabel("Tempo de Rotação (em segundos)"))
+        box.addWidget(slider)
+        box.addLayout(hbox)
+
+        return box, slider, curLabel
+
+    def _updateRotationTimeLabel(self, value):
+        self._rotationTimeLabel.setText(str(value))
+
+    def setRotationTime(self, value):
+        self.database.rotationTime = value
+        self._updateRotationTimeLabel(value)
+
     def _selectCategoryEvent(self, selection):
         if selection.isEmpty():
             self.selectCategory(None)
         else:
-            index = selection.indexes()[0]
-            item = self._categoryList.itemFromIndex(index)
-            self.selectCategory(item.text())
+            self.selectCategory(self.selectedCategory())
 
-    def selectCategory(self, categoryName):
-        if not categoryName:
+    def _selectSymbolEvent(self, selection):
+        self._updateSymbolButtons()
+
+    def _updateCategoryButtons(self):
+        self._categoryRemoveButton.setEnabled(self.selectedCategory() is not None)
+
+    def _updateSymbolButtons(self):
+        self._symbolRemoveButton.setEnabled(self.selectedSymbol() is not None)
+        self._symbolAddButton.setEnabled(self.selectedCategory() is not None)
+
+    def selectedCategory(self):
+        try:
+            index = self._categoryTable.selectedIndexes()[0]
+        except IndexError:
+            return None
+
+        category = self._categoryTable.model().itemByIndex(index.row())
+        return category
+
+    def selectCategory(self, category):
+        if not category:
             self._populateSymbolTable(None)
-        else:
-            newCategory = self.database.category(categoryName)
-            self._populateSymbolTable(newCategory)
+            self._updateCategoryButtons()
+            self._updateSymbolButtons()
+            return
+
+        if isinstance(category, str):
+            category = self.database.category(category)
+
+        self._populateSymbolTable(category)
+        self._updateCategoryButtons()
+        self._updateSymbolButtons()
 
     def addCategory(self):
-        print('BLARGH')
+        self._categoryTable.model().addItem(Category(name='Nova Categoria'))
 
     def removeCategory(self):
-        print('ARGH')
+        category = self.selectedCategory()
+        if category is not None:
+            self._categoryTable.model().removeItem(category)
 
-    def _initCategoryList(self):
-        list_ = QListWidget()
-        list_.selectionModel().selectionChanged.connect(self._selectCategoryEvent)
+    def selectedSymbol(self):
+        try:
+            index = self._symbolTable.selectedIndexes()[0]
+        except IndexError:
+            return None
 
-        buttonRow, removeButton, addButton = self._createButtonRow(
-            ['-', '+'], self._buttonMakeSmall)
-
-        addButton.pressed.connect(self.addCategory)
-        removeButton.pressed.connect(self.removeCategory)
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(list_)
-        vbox.addLayout(buttonRow)
-
-        return vbox, list_
-
-    def _populateCategoryList(self):
-        self._categoryList.clear()
-
-        categories = list(self.database.categories())
-
-        for category in categories:
-            self._categoryList.addItem(QListWidgetItem(category.name))
-
-        self.selectCategory(None)
+        symbol = self._symbolTable.model().itemByIndex(index.row())
+        return symbol
 
     def addSymbol(self):
-        pass
+        self._symbolTable.model().addItem(Symbol(name='Novo Simbolo'))
 
     def removeSymbol(self):
-        print('ARGH')
+        symbol = self.selectedSymbol()
+        if symbol is not None:
+            self._symbolTable.model().removeItem(symbol)
 
-    def _initSymbolTable(self):
+    def _initTable(self, label, removeCallback, addCallback):
         table = QTableView()
 
         buttonRow, removeButton, addButton = self._createButtonRow(
             ['-', '+'], self._buttonMakeSmall)
 
-        addButton.pressed.connect(self.addSymbol)
-        removeButton.pressed.connect(self.removeSymbol)
+        addButton.pressed.connect(addCallback)
+        removeButton.pressed.connect(removeCallback)
 
         vbox = QVBoxLayout()
+        vbox.addWidget(QLabel(label))
         vbox.addWidget(table)
         vbox.addLayout(buttonRow)
 
-        return vbox, table
+        return vbox, table, removeButton, addButton
 
-    def _initWidgetSymbolTable(self):
-        table = QTableWidget()
-        table.setColumnCount(3)
-        table.setHorizontalHeaderLabels(["Nome", "Texto", "Imagem"])
-        table.resizeColumnsToContents()
-
-        buttonRow, removeButton, addButton = self._createButtonRow(
-            ['-', '+'], self._buttonMakeSmall)
-
-        addButton.pressed.connect(self.addSymbol)
-        removeButton.pressed.connect(self.removeSymbol)
-
-        vbox = QVBoxLayout()
-        vbox.addWidget(table)
-        vbox.addLayout(buttonRow)
-
-        return vbox, table
+    def _populateCategoryTable(self):
+        self._categoryTable.setModel(CategoryTableModel(self.database))
+        self._categoryTable.selectionModel().selectionChanged.connect(self._selectCategoryEvent)
 
     def _populateSymbolTable(self, category=None):
         if category is None:
-            self._symbolTable.setModel(None)
+            self._symbolTable.setModel(SymbolTableModel(Category('null')))
         else:
             self._symbolTable.setModel(SymbolTableModel(category))
 
-    def _populateWidgetSymbolTable(self, category=None):
-        self._currentCategory = category
-
-        self._symbolTable.clearContents()
-
-        if category:
-            symbols = list(category.symbols())
-        else:
-            symbols = []
-
-        self._symbolTable.setRowCount(len(symbols))
-
-        for i, symbol in enumerate(symbols):
-            self._symbolTable.setItem(i, 0, QTableWidgetItem(symbol.name))
-            self._symbolTable.setItem(i, 1, QTableWidgetItem(symbol.text))
-            self._symbolTable.setItem(i, 2, QTableWidgetItem(symbol.image))
+        self._symbolTable.selectionModel().selectionChanged.connect(self._selectSymbolEvent)
 
     def __init__(self):
         super().__init__()
 
-        self.database = Database.load() or Database.testData()
+        self.database = self._load_db()
 
         displayRow = QHBoxLayout()
-        categoryBox, self._categoryList = self._initCategoryList()
-        self._currentCategory = None
-
-        symbolBox, self._symbolTable = self._initSymbolTable()
-
+        categoryBox, self._categoryTable, self._categoryRemoveButton, self._categoryAddButton = \
+            self._initTable("Categorias", self.removeCategory, self.addCategory)
+        symbolBox, self._symbolTable, self._symbolRemoveButton, self._symbolAddButton = \
+            self._initTable("Símbolos", self.removeSymbol, self.addSymbol)
         displayRow.addLayout(categoryBox)
+        displayRow.addSpacing(5)
         displayRow.addLayout(symbolBox)
+
+        optionsRow = QVBoxLayout()
+        rotationTimeBox, self._rotationTimeSlider, self._rotationTimeLabel = \
+            self._createTimeSlider(0, 10)
+        self._rotationTimeSlider.setValue(self.database.rotationTime)
+
+        optionsRow.addLayout(rotationTimeBox)
 
         buttonRow, reloadButton, saveButton = self._createButtonRow(
             ["&Recarregar", "&Salvar"])
 
+        reloadButton.pressed.connect(self.reload)
+        saveButton.pressed.connect(self.save)
+
         layout = QVBoxLayout()
         layout.addItem(displayRow)
+        layout.addItem(optionsRow)
         layout.addItem(buttonRow)
 
         self.setLayout(layout)
 
-        self._populateCategoryList()
+        self._populateCategoryTable()
+        self._populateSymbolTable(None)
+
+        self._categoryTable.setSelectionMode(QAbstractItemView.SingleSelection)
+        self._symbolTable.setSelectionMode(QAbstractItemView.SingleSelection)
+
+    def _load_db(self):
+        database = Database.load()
+        if database is None:
+           database = Database.testData()
+
+        return database
+
+    def reload(self):
+        self.database = self._load_db()
+
+        self._populateCategoryTable()
+        self._populateSymbolTable(None)
+        self._rotationTimeSlider.setValue(self.database.rotationTime)
 
     def save(self):
-        self.database.save()
+        if self.database.save():
+            QMessageBox.information(self, 'DPCS', 'Símbolos salvos com sucesso.')
+        else:
+            QMessageBox.warning(self, 'DPCS', 'Falha ao salvar símbolos')
