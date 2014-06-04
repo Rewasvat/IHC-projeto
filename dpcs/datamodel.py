@@ -117,7 +117,11 @@ class Database(Category):
         filename = filename or self.defaultFilename
 
         with open(filename, 'wb') as fp:
-            return pickle.dump(self, fp)
+            try:
+                pickle.dump(self, fp)
+                return True
+            except:
+                return False
 
     @classmethod
     def load(cls, filename=None):
