@@ -1,5 +1,6 @@
 import QtQuick 2.2
 import DPCS 1.0
+import QtMultimedia 5.0
 
 //ver isso: http://stackoverflow.com/questions/23902968/pyqt5-executable-application-with-qml
 
@@ -17,21 +18,16 @@ Rectangle {
 
     Component {
         id: symbolDelegate
-        Item {
-            width: 100
-            anchors.topMargin: 20
-            y: 50
+        Row {
+            id: sWrapper
             Row {
-                height: 45
-                Text {
-                    text: "\n"+name + "|" + stext + "|" + image
+                Image {
+                    id: symImg
+                    anchors.centerIn: sWrapper
                     
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            sp.speak(name, stext)
-                        }
-                    }
+                    width:  sWrapper.PathView.isCurrentItem ? 80 : 64
+                    height: sWrapper.PathView.isCurrentItem ? 80 : 64
+                    source: image
                 }
             }
         }
@@ -39,19 +35,24 @@ Rectangle {
     Component {
         id: categoryDelegate
         Column {
-            id: wrapper
+            id: cWrapper
             Rectangle {
-                color: "red"
+                color: ccolor
                 id: rect
-                anchors.verticalCenter: wrapper.verticalCenter
+                anchors.verticalCenter: cWrapper.verticalCenter
                 width: 760
-                height: 70
+                height: cWrapper.PathView.isCurrentItem ? 88 : 70
+                
+                border.color: "black"
+                border.width: cWrapper.PathView.isCurrentItem ? 8 : 0
+                opacity: cWrapper.PathView.isCurrentItem ? 1.0 : 0.6
+                
             }
             Image {
                 id: catImg
                 anchors.left: rect.left
                 anchors.leftMargin: 10
-                anchors.verticalCenter: wrapper.verticalCenter
+                anchors.verticalCenter: cWrapper.verticalCenter
                 
                 width: 64; height: 64
                 source: image
@@ -59,19 +60,17 @@ Rectangle {
             Text {
                 text: name
                 font.pointSize: 16
-                color: wrapper.PathView.isCurrentItem ? "red" : "black"
                 anchors.left: catImg.right
                 anchors.leftMargin: 10
-                anchors.verticalCenter: wrapper.verticalCenter
+                anchors.verticalCenter: cWrapper.verticalCenter
             }
-            
         }
     }
     
     PathView {
         id: categoryView
         anchors.fill: parent
-
+        visible: false
         model: myData.categories
         delegate: categoryDelegate
         
@@ -83,14 +82,78 @@ Rectangle {
             PathLine { x: 20; y: 580 }
         }
         
-        Timer { 
-            interval: myData.tempoDeRotacao * 1000
-            repeat: true
-            running: true
-            onTriggered: categoryView.incrementCurrentIndex()
+        Keys.onSpacePressed: {
+            symbolView.model = myData.categories[categoryView.currentIndex].symbols
+            symbolView.visible = true
+            symbolView.focus = true
+            categoryView.focus = false
         }
     }
     
+    PathView {
+        id: symbolView
+        visible: false
+        delegate: symbolDelegate
+        
+        preferredHighlightBegin: 0.5
+        preferredHighlightEnd: 0.5
+        path: Path {
+            startX: 20
+            startY: 300
+            PathLine { x: 780; y: 300 }
+        }
+        
+        Keys.onSpacePressed: {
+            var sym = myData.categories[categoryView.currentIndex].symbols[symbolView.currentIndex]
+            
+            sp.speak(sym.name, sym.stext)
+            symbolView.visible = false
+        
+            symbolView.focus = false
+            categoryView.focus = true
+        }
+    }
+    
+    Timer { 
+        id: iterator
+        interval: myData.rotationTime * 1000
+        repeat: true
+        running: false
+        onTriggered: symbolView.visible ? symbolView.incrementCurrentIndex() : categoryView.incrementCurrentIndex()
+    }
+    
+    Video {
+        id: tutorial
+        anchors.fill: parent
+        source: "tuturialDPCS.wmv"
+        autoLoad: true
+        autoPlay: true
+        
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                tutorial.visible = false
+                categoryView.visible = true
+                categoryView.focus = true
+                iterator.running = true
+            }
+        }
+        
+        onStopped: {
+            tutorial.visible = false
+            categoryView.visible = true
+            categoryView.focus = true
+            iterator.running = true
+        }
+        
+        focus: true
+        Keys.onSpacePressed: {
+            tutorial.visible = false
+            categoryView.visible = true
+            categoryView.focus = true
+            iterator.running = true
+        }
+    }    
     
     Text {
         anchors.top: parent.top

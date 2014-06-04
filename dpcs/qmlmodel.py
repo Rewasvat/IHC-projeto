@@ -20,14 +20,23 @@ class Database(QObject):
     def load(self):
         self.data = datamodel.Database.load()
         
-    tempoDeRotacaoChanged = pyqtSignal(int)
+    @pyqtSlot(int)
+    def get(self, index):
+        print("getting index ", index)
+        return Category(self, self.data.categoryByIndex(index))
+        
+    rotationTimeChanged = pyqtSignal(int)
     
-    @pyqtProperty(int, notify=tempoDeRotacaoChanged)
-    def tempoDeRotacao(self):
-        return self.data.tempoDeRotacao
-    @tempoDeRotacao.setter
-    def tempoDeRotacao(self, tempoDeRotacao):
-        self.data.tempoDeRotacao = tempoDeRotacao
+    @pyqtProperty(int, notify=rotationTimeChanged)
+    def rotationTime(self):
+        return self.data.rotationTime
+    @rotationTime.setter
+    def rotationTime(self, rotationTime):
+        self.data.rotationTime = rotationTime
+        
+    @pyqtProperty(int, constant=True)
+    def count(self):
+        return self.data.categoryCount()
         
     @pyqtProperty(QQmlListProperty, constant=True)
     def categories(self):
@@ -41,6 +50,7 @@ class Category(QObject):
     def __init__(self, parent=None, categ=None):
         super(Category,self).__init__(parent)
         self.categ = categ
+        self._selected = False
         
     nameChanged = pyqtSignal(str)
     
@@ -60,14 +70,14 @@ class Category(QObject):
     def image(self, image):
         self.categ.image = image
         
-    colorChanged = pyqtSignal(QColor)
+    ccolorChanged = pyqtSignal(QColor)
     
-    @pyqtProperty(QColor, notify=colorChanged)
-    def color(self):
+    @pyqtProperty(QColor, notify=ccolorChanged)
+    def ccolor(self):
         return self.categ.color
-    @color.setter
-    def color(self, color):
-        self.categ.color = color
+    @ccolor.setter
+    def ccolor(self, ccolor):
+        self.categ.color = ccolor
         
     @pyqtProperty(QQmlListProperty, constant=True)
     def symbols(self):
@@ -79,6 +89,15 @@ class Category(QObject):
         syms.insert(0, v1)
         syms.insert(1+int(len(syms)/2), v2)
         return QQmlListProperty(Symbol, self, syms)
+        
+    selectedChanged = pyqtSignal(bool)
+    
+    @pyqtProperty(QColor, notify=selectedChanged)
+    def selected(self):
+        return self._selected
+    @selected.setter
+    def selected(self, selected):
+        self._selected = selected
    
 ###
 class Symbol(QObject):
