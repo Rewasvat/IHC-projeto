@@ -1,136 +1,69 @@
-import QtQuick 2.2
+import QtQuick 2.2  
+import DPCS 1.0
+
+import "qmlvar.js" as P
 
 Rectangle {
     width: 800
-    height: 700
+    height: 800
 
-    gradient: Gradient {
-        GradientStop { position: 0.0; color: "#b0c5de" }
-        GradientStop { position: 1.0; color: "slategray" }
+    Database {
+        id: myData
     }
 
-    ListModel {
-        id: categoryListModel
-        ListElement {
-            name: "Ações"
-            image:  "/Users/grey/Desktop/teste/imagCateg/ir.gif"
-            color: "#41ae31"
-            selected: false
-
-            symbols: [
-                ListElement {
-                    name: "voltar"
-                    image: "/Users/grey/Desktop/teste/seta.jpg"
-                },
-                ListElement {
-                    name: "Beber"
-                    image: "/Users/grey/Desktop/teste/simbolos/acoes/beber.jpg"
-                },
-                ListElement {
-                    name: "Comer"
-                    image: "/Users/grey/Desktop/teste/simbolos/acoes/comer.jpg"
-                },
-                ListElement {
-                    name: "Ir"
-                    image: "/Users/grey/Desktop/teste/simbolos/acoes/ir.jpg"
-                },
-                ListElement {
-                    name: "Jogar"
-                    image: "/Users/grey/Desktop/teste/simbolos/acoes/jogar.jpg"
-                },
-                ListElement {
-                    name: "Tomar Banho"
-                    image: "/Users/grey/Desktop/teste/simbolos/acoes/tomarBanho.jpg"
-                }
-            ]
-        }
-
-        ListElement {
-            name:  "Comida"
-            image:  "/Users/grey/Desktop/teste/imagCateg/comida.gif"
-            color: "#e36123"
-            selected: false
-
-            symbols: [
-                ListElement {
-                    name: "Banana"
-                    image: "/Users/grey/Desktop/teste/simbolos/comida/banana.jpg" },
-                ListElement {
-                    name: "Chocolate"
-                    image: "/Users/grey/Desktop/teste/simbolos/comida/choco.jpg" },
-                ListElement {
-                    name: "Comida"
-                    image: "/Users/grey/Desktop/teste/simbolos/comida/comida.jpg" },
-                ListElement {
-                    name: "Melancia"
-                    image: "/Users/grey/Desktop/teste/simbolos/comida/melancia.jpg" }
-            ]
-        }
-
-        ListElement {
-            name: "Dias Da Semana"
-            image:  "/Users/grey/Desktop/teste/imagCateg/week.png"
-            color: "#fcef91"
-            selected: false
-
-            symbols: [
-                ListElement {
-                    name: "Segunda"
-                    sText: "Segunda"
-                    image: ""
-                },
-                ListElement {
-                    itemName: "Terça"
-                    sText: "Terça"
-                    image: ""
-                },
-                ListElement {
-                    itemName: "Quarta"
-                    sText: "Quarta"
-                    image: ""
-                },
-                ListElement {
-                    itemName: "Quinta"
-                    sText: "Quinta"
-                    image: ""
-                },
-                ListElement {
-                    itemName: "Sexta"
-                    sText: "Sexta"
-                    image: ""
-                }
-            ]
-        }
+    Speaker {
+        id: sp
     }
 
-    property int currentCategory:   0
-    property int currentSymbolIndex: 0
-    property bool isInCategory:     false
-    property bool selectedSymbol:   false
+    property int currentCategoryIndex: -1
+    property int currentSymbolIndex: -1
+    property bool isInCategory: false
+    property bool selectedSymbol: false
 
     property Column currentColumn;
     property ListView currentSymbols;
-    property Rectangle currentSymbolRect;
 
-    property int timerIntervalInSeconds: 2
+    property int timerIntervalInSeconds: 3
     property int symbolCount: 0
+
+    function currentCategory() {                 
+        return myData.categories[currentCategoryIndex];
+    }
+
+    function currentCategoryName() {
+        return currentCategory().name;
+    }
 
     function performClick() {
         if (!isInCategory) {
-            selectCategory(currentCategory);
+            selectCategory(currentCategoryIndex);
         }
         else {
-            var symbolInModel = categoryListModel.get(currentCategory).symbols.get(currentSymbolIndex).name;
+            var symbolInModel = myData.categories[currentCategoryIndex].symbols[currentSymbolIndex].name;
 
             if (symbolInModel === "voltar") {
                 isInCategory = false;
-                categoryListModel.setProperty(currentCategory, "selected", false)
+                P.unselect(currentCategoryName());
             }
             else {
-                // TODO: Speak
+                sp.speak(symbolInModel, myData.categories[currentCategoryIndex].symbols[currentSymbolIndex].sText)
                 console.log(symbolInModel);
             }
         }
+    }
+
+    function debugProperties() {
+        console.log("\n");
+        console.log("currentCategoryIndex: " + currentCategoryIndex);
+        console.log("currentSymbolIndex: " + currentSymbolIndex);
+        console.log("numberOfCategories: " + myData.categories.length);
+        console.log("isInCategory: " + isInCategory);
+        console.log("selectedSymbol: " + selectedSymbol);
+        console.log("currentColumn: " + currentColumn);
+        console.log("currentSymbols: " + currentSymbols);
+        console.log("currentSymbolRect: " + currentSymbolRect);
+        console.log("timerIntervalInSeconds: " + timerIntervalInSeconds);
+        console.log("symbolCount: " + symbolCount);
     }
 
     function tick() {
@@ -139,24 +72,31 @@ Rectangle {
         else if (isInCategory) {
             currentSymbolIndex = (currentSymbolIndex + 1) % symbolCount;
             currentSymbols.currentIndex = currentSymbolIndex
+            currentSymbols.update();
         }
         else {
-            currentCategory = (currentCategory + 1) % categoryListModel.count
-            categoryList.currentIndex = currentCategory
+            currentCategoryIndex = (currentCategoryIndex + 1) % myData.categories.length
+            categoryList.currentIndex = currentCategoryIndex
         }
     }
 
     function selectCategory(index) {
-        for (var i = 0; i < categoryListModel.count; i++)
-            if (i !== index)
-                categoryListModel.setProperty(i, "selected", false)
+        for (var i = 0; i < myData.categories.length; i++) {
+            if (i !== index) {
+                P.unselect(myData.categories[i].name);
+            }
+        }
 
-        categoryListModel.setProperty(index, "selected", true)
-        for (var j = 0; j < currentColumn.children.length; j++)
+        var myCat = myData.categories[index];
+        P.select(myCat.name);
+        
+        for (var j = 0; j < currentColumn.children.length; j++) {
             currentSymbols = currentColumn.children[j];
+            console.log(currentColumn.children[j]);
+        }
 
         // Colocando o numero de simbolos dessa categoria
-        symbolCount = currentSymbols.count;
+        symbolCount = myCat.symbols.length;
         console.log("Encontrados " + symbolCount + " simbolos");
 
         isInCategory = true;
@@ -175,7 +115,7 @@ Rectangle {
         width: 60
         height: 60
         border.color: "black"
-        radius: 20
+        radius: 50
 
         gradient: Gradient {
             GradientStop { position: 0.0; color: "lightgreen" }
@@ -197,69 +137,73 @@ Rectangle {
     }
 
     Image {
-        width: 120
-        height: 60
+        width: 340
+        height: 110
         x: (parent.width - width)/2;
         y: 10
-        source: "/Users/grey/Desktop/teste/dpcs.png"
+        source: "simbolos/dpcs.jpg"
     }
 
     ListView {
         id: categoryList
         x: 0
-        spacing: 10
         anchors.fill: parent
-        anchors.topMargin: 80
-        model: categoryListModel
-
-        highlight: Rectangle {
-            height: 100
-            width: 800
-            color: "transparent"
-            border.color: "red"
-            border.width: 5
-            z: 1
-        }
+        anchors.topMargin: 120
+        model: myData.categories
 
         delegate: Column {
+            id: columnComponent
             width: 800
-            y: 60
 
-            Rectangle {
-                color: color
-                height: 80
+            Item {
+                height: 100
                 width: 800
-                border.color: "white"
-                radius: 5
+                
+                Rectangle {
+                    anchors.fill: parent
+                    border.color: "transparent"
+                    color: columnComponent.ListView.isCurrentItem ? "transparent" : bgColor
 
-                Image {
-                    width: 80
-                    height: 60
-                    x: 10
-                    anchors.verticalCenter: parent.verticalCenter
-                    source: image
+                    Image {
+                        width: 80
+                        height: 80
+                        x: 10
+                        anchors.verticalCenter: parent.verticalCenter
+                        source: image
+                    }
+
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        x: 100
+                        font.pixelSize: 24
+                        text: name
+                    }
                 }
 
-                Text {
-                    anchors.verticalCenter: parent.verticalCenter
-                    x: 100
-                    font.pixelSize: 24
-                    text: name
-                }
+                
+            }
 
-                Loader {
+
+            Loader {
                    id: subItemLoader
 
-                   visible: selected
+                   visible: name === currentCategoryName()
                    property variant subItemModel : symbols
-                   sourceComponent: selected ? subItemColumnDelegate : null
+                   sourceComponent: name === currentCategoryName() ? subItemColumnDelegate : null
                    onStatusChanged: {
-                       if (status == Loader.Ready)
-                           item.model = subItemModel
-
-                       currentColumn = item;
-                   }
+                        if (status == Loader.Ready) item.model = subItemModel
+                        currentColumn = item
+                    }
                }
+        }
+
+        highlight: Component {
+            Rectangle {
+                height: 150
+                width: 800
+                border.color: "red"
+                border.width: 5
+                z: 1
             }
         }
     }
@@ -267,38 +211,46 @@ Rectangle {
     Component {
         id: subItemColumnDelegate
         Column {
-            id: subItemRow
             property alias model : subItemRepeater.model
             width: 750
-            x: 200
+
             ListView {
-                y: 5
-                width: 750
+                width: 550
+                x: 240
+                y: 12
                 id: subItemRepeater
                 orientation: ListView.Horizontal
-                highlight: Rectangle {
+
+                highlight: Component { Rectangle {
                     width:  80
                     height: 70
                     color: "transparent"
-                    border.color: "yellow"
+                    border.color: "red"
                     border.width: 5
-                    z: 1
+                }
                 }
 
-                delegate: Rectangle {
-                    color: "#FFFFFF"
-                    width: 80
-                    height: 70
-
-                    Image {
+                delegate: Component {
+                    Rectangle {
+                        color: "transparent"
                         width: 80
                         height: 70
-                        source: image
+
+                        Image {
+                            x: 5
+                            y: 5
+                            width: 70
+                            height: 60
+                            source: image
+                        }
                     }
                 }
+
             }
         }
     }
 
-    Component.onCompleted: { tick(); }
+    Component.onCompleted: { 
+        tick(); 
+    }
 }

@@ -17,9 +17,9 @@ class Symbol:
 
 
 class Category:
-    _fields = ('name', 'image', 'color')
+    _fields = ('name', 'image', 'color', 'selected')
 
-    def __init__(self, name, image='', color=None):
+    def __init__(self, name, image='', color=None, selected = False):
         super().__init__()
 
         self._categories = list()
@@ -31,6 +31,7 @@ class Category:
         self.name = name
         self.image = image
         self.color = color
+        self.selected = selected
 
     def categories(self):
         for category in self._categories:

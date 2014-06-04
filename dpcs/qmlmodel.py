@@ -32,6 +32,7 @@ class Category(QObject):
     def __init__(self, parent=None, categ=None):
         super(Category,self).__init__(parent)
         self.categ = categ
+        self.isSelected = False
         
     nameChanged = pyqtSignal(str)
     
@@ -54,11 +55,21 @@ class Category(QObject):
     colorChanged = pyqtSignal(QColor)
     
     @pyqtProperty(QColor, notify=colorChanged)
-    def color(self):
+    def bgColor(self):
         return self.categ.color
-    @color.setter
-    def color(self, color):
+    @bgColor.setter
+    def bgColor(self, color):
         self.categ.color = color
+
+    selectedChanged = pyqtSignal(bool)
+
+    @pyqtProperty(bool, notify=selectedChanged)
+    def isSelected(self):
+        return self.categ.selected
+    @isSelected.setter
+    def isSelected(self, value):
+        self.categ.selected = value
+
         
     @pyqtProperty(QQmlListProperty, constant=True)
     def symbols(self):
