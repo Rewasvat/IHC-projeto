@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from PyQt5.QtWidgets import QTableView
 
 from .datamodel import Symbol, Category, Database
 
@@ -175,7 +174,6 @@ class SymbolManager(QWidget):
         box = QVBoxLayout()
 
         slider = QSlider()
-
         slider.setOrientation(Qt.Horizontal)
         slider.setMinimum(min)
         slider.setMaximum(max)
@@ -183,28 +181,26 @@ class SymbolManager(QWidget):
         slider.valueChanged.connect(self.setRotationTime)
 
         hbox = QHBoxLayout()
-        minLabel = QLabel(str(min))
-        maxLabel = QLabel(str(max))
         curLabel = QLabel()
 
-        hbox.addWidget(minLabel)
-        hbox.addSpacer()
+        hbox.addWidget(QLabel(str(min)))
+        hbox.addStretch()
         hbox.addWidget(curLabel)
-        hbox.addSpacer()
-        hbox.addWidget(maxLabel)
-
-        def updateLabel(value):
-            curLabel.setText(str(value))
+        hbox.addStretch()
+        hbox.addWidget(QLabel(str(max)))
 
         box.addWidget(QLabel("Tempo de Rotação (em segundos)"))
         box.addWidget(slider)
+        box.addLayout(hbox)
 
+        return box, slider, curLabel
 
-
-        return box, slider
+    def _updateRotationTimeLabel(self, value):
+        self._rotationTimeLabel.setText(str(value))
 
     def setRotationTime(self, value):
-        self.rotationTime = value
+        self.database.rotationTime = value
+        self._updateRotationTimeLabel(value)
 
     def _selectCategoryEvent(self, selection):
         if selection.isEmpty():
@@ -309,11 +305,13 @@ class SymbolManager(QWidget):
         symbolBox, self._symbolTable, self._symbolRemoveButton, self._symbolAddButton = \
             self._initTable("Símbolos", self.removeSymbol, self.addSymbol)
         displayRow.addLayout(categoryBox)
+        displayRow.addSpacing(5)
         displayRow.addLayout(symbolBox)
 
         optionsRow = QVBoxLayout()
-        rotationTimeBox, rotationTimeSlider = self._createTimeSlider()
-        rotationTimeSlider.setValue(self.database.rotationTime)
+        rotationTimeBox, self._rotationTimeSlider, self._rotationTimeLabel = \
+            self._createTimeSlider(0, 10)
+        self._rotationTimeSlider.setValue(self.database.rotationTime)
 
         optionsRow.addLayout(rotationTimeBox)
 
@@ -348,7 +346,10 @@ class SymbolManager(QWidget):
 
         self._populateCategoryTable()
         self._populateSymbolTable(None)
+        self._rotationTimeSlider.setValue(self.database.rotationTime)
 
     def save(self):
-        self.database.save()
-
+        if self.database.save():
+            QMessageBox.information(self, 'DPCS', 'Símbolos salvos com sucesso.')
+        else:
+            QMessageBox.warning(self, 'DPCS', 'Falha ao salvar símbolos')
