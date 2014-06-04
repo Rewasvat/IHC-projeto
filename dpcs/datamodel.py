@@ -4,6 +4,7 @@
 import os.path
 import pickle
 
+from PyQt5.QtGui import QColor
 
 class Symbol:
     _fields = ('name', 'text', 'image')
@@ -98,6 +99,12 @@ class Category:
     def __len__(self):
         return self.symbolCount()
 
+    def __setattr__(self, key, value):
+        if key == 'color':
+            if not isinstance(value, QColor):
+                value = QColor(value)
+        
+        super().__setattr__(key, value)
 
 class Database(Category):
     defaultFilename = "./dpcs-database.dat"
@@ -135,7 +142,6 @@ class Database(Category):
 
     @classmethod
     def testData(cls, save=True):
-        from PyQt5.QtGui import QColor
 
         db = Database()
         c1 = Category('test', 'testImage', QColor('red'))
