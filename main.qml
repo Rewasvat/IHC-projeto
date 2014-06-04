@@ -175,8 +175,8 @@ Rectangle {
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         x: 100
-                        font.pixelSize: 24
-                        text: name
+                        font.pixelSize: 20
+                        text: name + " (" + symbols.length + ")"
                     }
                 }
 
