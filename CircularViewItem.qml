@@ -1,27 +1,25 @@
 import QtQuick 2.2
-import QtQuick.Layouts 1.1
 
 Circle {
     id: delegateRoot
 
     width: 200
-    color: PathView.isCurrentItem ? '#5F99D2BB' : 'transparent'
-    border.color: '#000000'
-    border.width: PathView.isCurrentItem ? 1 : 0
+    color: PathView.isCurrentItem ? ccolor : 'transparent'
+    border.color: 'yellow'
+    border.width: PathView.isCurrentItem ? 4 : 0
 
     innerChildren: [
-        ColumnLayout {
+        Column {
             anchors.fill: parent
             Image {
-                source: model.image
+                source: image
                 fillMode: Image.PreserveAspectFit
 
-                Layout.fillHeight: true
-                Layout.fillWidth: true
+                anchors.fill: parent
             }
 
             Text {
-                text: model.name
+                text: name
                 color: 'white'
                 font.pointSize: 16
                 fontSizeMode: Text.HorizontalFit
@@ -29,7 +27,7 @@ Circle {
                 style: Text.Outline
                 styleColor: 'black'
 
-                Layout.fillWidth: true
+                anchors.fill: parent
             }
         }
     ]

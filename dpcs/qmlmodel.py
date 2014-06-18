@@ -43,6 +43,9 @@ class Database(QObject):
         categs = []
         for c in self.data.categories():
             categs.append(Category(self, c))
+
+        #categs.insert(0, Category(self, datamodel.Category("Tocar", "./icones/speak.png", "lightblue")))
+
         return QQmlListProperty(Category, self, categs)
 
 ###
@@ -82,12 +85,22 @@ class Category(QObject):
     @pyqtProperty(QQmlListProperty, constant=True)
     def symbols(self):
         syms = []
+
+        i = 0
         for s in self.categ.symbols():
+            if i == 2:
+                syms.append(Symbol(self, datamodel.Symbol("voltar", "Voltar", "./icones/setaVoltar.png")))
+                i = 0
+            else:
+                i = i + 1
+
             syms.append(Symbol(self, s))
-        v1 = Symbol(self, datamodel.Symbol("voltar", "Voltar", "./simbolos/seta.jpg"))
-        v2 = Symbol(self, datamodel.Symbol("voltar", "Voltar", "./simbolos/seta.jpg"))
+        
+        v1 = Symbol(self, datamodel.Symbol("voltar", "Voltar", "./icones/setaVoltar.png"))
+
         syms.insert(0, v1)
-        syms.insert(1+int(len(syms)/2), v2)
+        #syms.insert(1+int(len(syms)/2), v2)
+
         return QQmlListProperty(Symbol, self, syms)
         
     selectedChanged = pyqtSignal(bool)
